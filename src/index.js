@@ -5,6 +5,8 @@
  * The MagicGrid class is an
  * implementation of a flexible
  * grid layout.
+ *
+ * [1] - if we want to flush outside (tips) gutters
  */
 
 import {
@@ -71,7 +73,7 @@ class MagicGrid {
     }
 
     this.started = true;
-    this.listen();
+    //this.listen();
   }
 
   /**
@@ -81,7 +83,7 @@ class MagicGrid {
    * @private
    */
   colWidth () {
-    return this.items[0].getBoundingClientRect().width + this.gutter;
+    return this.items[0].getBoundingClientRect().width - this.gutter;
   }
 
   /**
@@ -105,9 +107,15 @@ class MagicGrid {
       cols[i] = {height: 0, index: i};
     }
 
-    let wSpace = width - numCols * colWidth + this.gutter;
+    let wSpace = width - numCols * colWidth;
 
-    return {cols, wSpace};
+    // gutter space to substract from to each column width
+    let gSpace = ((numCols + 1) * this.gutter) / numCols;
+
+    // [1]
+    //let gSpace = ((numCols - 1) * this.gutter) / numCols;
+
+    return {cols, wSpace, gSpace, colWidth: this.colWidth()};
   }
 
   /**
@@ -134,9 +142,8 @@ class MagicGrid {
    * the height of the grid.
    */
   positionItems () {
-    let { cols, wSpace } = this.setup();
+    let { cols, wSpace, colWidth } = this.setup();
     let maxHeight = 0;
-    let colWidth = this.colWidth();
 
     wSpace = Math.floor(wSpace / 2);
 
@@ -144,7 +151,11 @@ class MagicGrid {
       let col = this.nextCol(cols, i);
       let item = this.items[i];
       let topGutter = col.height ? this.gutter : 0;
-      let left = col.index * colWidth + wSpace + "px";
+
+      let left = col.index * colWidth +  (col.index === 0 ? this.gutter : this.gutter +this.gutter*col.index) + "px";
+      // [1]
+      //let left = col.index * colWidth +  this.gutter*col.index + "px";
+
       let top = col.height + topGutter + "px";
 
       if(this.useTransform){

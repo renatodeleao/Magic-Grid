@@ -20,7 +20,25 @@ export default [{
     }),
     uglify()
   ]
-}, {
+},
+{
+  input: "src/index.js",
+  output: {
+    file: `dist/${pkg.name}.js`,
+    format: "umd",
+    name: "MagicGrid",
+    sourceMap: true
+  },
+  plugins: [
+    resolve(),
+    commonjs(),
+    buble({ // transpile ES2015+ to ES5
+      exclude: ["node_modules/**"],
+      transforms: { forOf: false }
+    }),
+  ]
+},
+{
   input: "src/index.js",
   output: [
     { file: pkg.main, format: "cjs" },

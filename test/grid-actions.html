@@ -6,8 +6,15 @@
   <title>Magic Grid</title>
 
   <style>
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      outline: 1px solid red;
+      margin: 0 auto;
+    }
+
     .container div {
-      width: calc(25% - 60px);
+      width: calc(25%);
       height: 500px;
       background-color: antiquewhite;
       display: flex;
@@ -28,7 +35,14 @@
   <button data-magic-grid-listen>Listen</button>
   <button data-magic-grid-destroy>destroy</button>
   <button data-magic-grid-position>position</button>
-  <div class="container">
+
+  <!-- <div class="container">
+      <div class="item1">1</div>
+      <div class="item2">2</div>
+      <div class="item3">3</div>
+      <div class="item4">4</div>
+  </div> -->
+  <div class="container container-js">
     <div class="item1">1</div>
     <div class="item2">2</div>
     <div class="item3">3</div>
@@ -44,10 +58,10 @@
     <div class="item13">13</div>
   </div>
 
-  <script src="../dist/magic-grid.min.js"></script>
+  <script src="../dist/magic-grid.js"></script>
   <script>
       let magicGrid = new MagicGrid({
-        container: '.container',
+        container: '.container-js',
         animate: true,
         gutter: 30,
         static: true,
@@ -60,10 +74,8 @@
       let listenBtn = document.querySelector('[data-magic-grid-listen]');
       let destroyBtn = document.querySelector('[data-magic-grid-destroy]');
       let positionBtn = document.querySelector('[data-magic-grid-position]');
-      initBtn.addEventListener('click', function(){
-        console.log(this);
-        magicGrid.init()
-      });
+      let ref = magicGrid.init();
+      initBtn.addEventListener('click', ref);
       listenBtn.addEventListener('click', magicGrid.listen);
       destroyBtn.addEventListener('click', magicGrid.destroy);
       positionBtn.addEventListener('click', magicGrid.positionItems);
