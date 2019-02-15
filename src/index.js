@@ -41,6 +41,12 @@ class MagicGrid {
     this.animate = config.animate || false;
     this.started = false;
 
+    // bind this to (at least) methods used by other "objects (like window or button)"
+    //this.init = this.init.bind(this);
+    this.listen = this.listen.bind(this);
+    this.positionItems = this.positionItems.bind(this);
+    this.destroy = this.destroy.bind(this);
+    this.handleWindowResize = this.handleWindowResize.bind(this);
     this.init();
   }
 
@@ -58,13 +64,14 @@ class MagicGrid {
       let style = this.items[i].style;
 
       style.position = "absolute";
-  
+
       if (this.animate) {
         style.transition = `${this.useTransform ? "transform" : "top, left"} 0.2s ease`;
       }
     }
 
     this.started = true;
+    this.listen();
   }
 
   /**
@@ -198,21 +205,57 @@ class MagicGrid {
    */
   listen () {
     if (this.ready()) {
-      let timeout;
-
-      window.addEventListener("resize", () => {
-        if (!timeout){
-          timeout = setTimeout(() => {
-            this.positionItems();
-            timeout = null;
-          }, 200);
-        }
-      });
-
+      window.addEventListener("resize", this.handleWindowResize)
       this.positionItems();
     }
     else this.getReady();
   }
+
+    /**
+   * call positionItems() on window resize
+   * note: referencable, so it can be removed
+   *
+   * @private
+   */
+  handleWindowResize() {
+    if (!this._timeout){
+      console.log()
+      this._timeout = setTimeout(() => {
+        this.positionItems();
+        this._timeout = null;
+      }, 200);
+    }
+  }
+
+
+  /**
+   * Remove all applied style properties and events
+   *
+   * @public
+   */
+  destroy() {
+    // turn off flag
+    this.started = false;
+    // remove container applied style properties
+    this.container.style.removeProperty("height");
+    this.container.style.removeProperty("position");
+
+    // convert HTMLCollection to iterable
+    let itemsArr = [].slice.call(this.items);
+    // remove each item applied style property
+    itemsArr.map(item => {
+      item.style.removeProperty("position")
+      item.style.removeProperty("transition")
+      if (this.useTransform) {
+        item.style.removeProperty('transform')
+      } else {
+        item.style.removeProperty("top");
+        item.style.removeProperty("left");
+      }
+    })
+
+    window.removeEventListener("resize", this.handleWindowResize);
+  };
 }
 
 export default MagicGrid;

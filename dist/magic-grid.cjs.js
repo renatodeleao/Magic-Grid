@@ -89,6 +89,12 @@ var MagicGrid = function MagicGrid (config) {
   this.animate = config.animate || false;
   this.started = false;
 
+  // bind this to (at least) methods used by other "objects (like window or button)"
+  //this.init = this.init.bind(this);
+  this.listen = this.listen.bind(this);
+  this.positionItems = this.positionItems.bind(this);
+  this.destroy = this.destroy.bind(this);
+  this.handleWindowResize = this.handleWindowResize.bind(this);
   this.init();
 };
 
@@ -106,13 +112,14 @@ MagicGrid.prototype.init = function init () {
     var style = this.items[i].style;
 
     style.position = "absolute";
-  
+
     if (this.animate) {
       style.transition = (this.useTransform ? "transform" : "top, left") + " 0.2s ease";
     }
   }
 
   this.started = true;
+  this.listen();
 };
 
 /**
@@ -249,23 +256,61 @@ MagicGrid.prototype.getReady = function getReady () {
  * window size changes.
  */
 MagicGrid.prototype.listen = function listen () {
-    var this$1 = this;
-
   if (this.ready()) {
-    var timeout;
-
-    window.addEventListener("resize", function () {
-      if (!timeout){
-        timeout = setTimeout(function () {
-          this$1.positionItems();
-          timeout = null;
-        }, 200);
-      }
-    });
-
+    window.addEventListener("resize", this.handleWindowResize);
     this.positionItems();
   }
   else { this.getReady(); }
+};
+
+  /**
+ * call positionItems() on window resize
+ * note: referencable, so it can be removed
+ *
+ * @private
+ */
+MagicGrid.prototype.handleWindowResize = function handleWindowResize () {
+    var this$1 = this;
+
+  if (!this._timeout){
+    console.log();
+    this._timeout = setTimeout(function () {
+      this$1.positionItems();
+      this$1._timeout = null;
+    }, 200);
+  }
+};
+
+
+/**
+ * Remove all applied style properties and events
+ *
+ * @public
+ */
+MagicGrid.prototype.destroy = function destroy () {
+    var this$1 = this;
+
+  // turn off flag
+  this.started = false;
+  // remove container applied style properties
+  this.container.style.removeProperty("height");
+  this.container.style.removeProperty("position");
+
+  // convert HTMLCollection to iterable
+  var itemsArr = [].slice.call(this.items);
+  // remove each item applied style property
+  itemsArr.map(function (item) {
+    item.style.removeProperty("position");
+    item.style.removeProperty("transition");
+    if (this$1.useTransform) {
+      item.style.removeProperty('transform');
+    } else {
+      item.style.removeProperty("top");
+      item.style.removeProperty("left");
+    }
+  });
+
+  window.removeEventListener("resize", this.handleWindowResize);
 };
 
 module.exports = MagicGrid;
